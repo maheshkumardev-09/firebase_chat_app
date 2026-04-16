@@ -1,0 +1,52 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_chat_app/app/routes/app_routes.dart';
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+class GoogleAuthController extends GetxController {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  Future<void> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
+
+      final user = userCredential.user;
+
+      if (user != null) {
+        // 🔥 YAHAN FIRESTORE CODE LAGANA HAI
+        await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
+          "email": user.email,
+          "name": user.displayName,
+          "uid": user.uid,
+        });
+
+        Get.snackbar("Success", "Google Login Successful");
+        Get.offAllNamed(AppRoutes.Home);
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
+  }
+
+  Future<void> logout() async {
+    await _googleSignIn.signOut();
+    await _auth.signOut();
+
+    Get.offAllNamed(AppRoutes.Login);
+  }
+}
