@@ -18,6 +18,7 @@ class GoogleAuthController extends GetxController {
           await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -31,7 +32,7 @@ class GoogleAuthController extends GetxController {
         // 🔥 YAHAN FIRESTORE CODE LAGANA HAI
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           "email": user.email,
-          "name": user.displayName,
+          "name": user.displayName ?? "No Name",
           "uid": user.uid,
         });
 
@@ -44,9 +45,10 @@ class GoogleAuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    await _googleSignIn.signOut();
-    await _auth.signOut();
-
+    try {
+      await _googleSignIn.signOut(); // Google ke liye
+    } catch (e) {}
+    await _auth.signOut(); // sab ke liye
     Get.offAllNamed(AppRoutes.Login);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:firebase_chat_app/app/controllers/email_auth_controller.dart';
 import 'package:firebase_chat_app/app/controllers/google_auth_controller.dart';
 import 'package:firebase_chat_app/app/routes/app_routes.dart';
-import 'package:firebase_chat_app/app/view/forgot_screen.dart';
+import 'package:firebase_chat_app/app/view/auth_screens/forgot_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 class LoginView extends StatelessWidget {
   final controller = Get.put(GoogleAuthController());
   final logincontroller = Get.put(EmailAuthController());
+  final bool passwordVisible = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,12 +109,25 @@ class LoginView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8.0.h),
-              TextField(
-                controller: logincontroller.passwordController,
-                key: Key('passwordField'),
-                decoration: InputDecoration(
-                  hintText: 'Enter your password',
-                  border: OutlineInputBorder(),
+              Obx(
+                () => TextField(
+                  controller: logincontroller.passwordController,
+                  keyboardType: TextInputType.visiblePassword,
+                  obscureText: logincontroller.isPasswordHidden.value,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your password',
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        logincontroller.isPasswordHidden.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        logincontroller.isPasswordHidden.toggle();
+                      },
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 50.h),
@@ -125,6 +139,7 @@ class LoginView extends StatelessWidget {
                     await logincontroller.login(
                       logincontroller.emailController.text.trim(),
                       logincontroller.passwordController.text.trim(),
+                      logincontroller.nameController.text.trim(),
                     );
                     print('login button clicked');
                   },

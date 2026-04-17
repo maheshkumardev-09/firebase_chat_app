@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class SignUpScreen extends StatelessWidget {
-  final controller = Get.put(EmailAuthController());
+  final signinController = Get.put(EmailAuthController());
 
   SignUpScreen({super.key});
 
@@ -37,7 +37,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 8.0.h),
               TextField(
-                controller: controller.nameController,
+                controller: signinController.nameController,
                 decoration: InputDecoration(
                   hintText: "Enter your name",
                   border: OutlineInputBorder(),
@@ -56,7 +56,8 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 8.0.h),
               TextField(
-                controller: controller.emailController,
+                keyboardType: TextInputType.emailAddress,
+                controller: signinController.emailController,
                 decoration: InputDecoration(
                   hintText: "Enter your email",
                   border: OutlineInputBorder(),
@@ -75,11 +76,22 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 8.0.h),
               TextField(
-                controller: controller.passwordController,
-                obscureText: true,
+                keyboardType: TextInputType.visiblePassword,
+                controller: signinController.passwordController,
+                obscureText: signinController.isPasswordHidden.value,
                 decoration: InputDecoration(
                   hintText: "Enter your password",
                   border: OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      signinController.isPasswordHidden.value
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      signinController.isPasswordHidden.toggle();
+                    },
+                  ),
                 ),
               ),
               SizedBox(height: 50.h),
@@ -88,10 +100,10 @@ class SignUpScreen extends StatelessWidget {
                 width: 300.w,
                 child: ElevatedButton(
                   onPressed: () {
-                    controller.signUp(
-                      controller.emailController.text.trim(),
-                      controller.passwordController.text.trim(),
-                      controller.nameController.text.trim(),
+                    signinController.signUp(
+                      signinController.emailController.text.trim(),
+                      signinController.passwordController.text.trim(),
+                      signinController.nameController.text.trim(),
                     );
                   },
                   style: ElevatedButton.styleFrom(

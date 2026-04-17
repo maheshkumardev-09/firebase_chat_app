@@ -9,7 +9,8 @@ class EmailAuthController extends GetxController {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Future<void> login(String email, String password) async {
+  var isPasswordHidden = true.obs;
+  Future<void> login(String email, String password, String name) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -19,7 +20,6 @@ class EmailAuthController extends GetxController {
       if (user != null) {
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           "email": email,
-          // "name": nameController.text.trim(),
           "uid": user.uid,
         });
       }
@@ -51,8 +51,10 @@ class EmailAuthController extends GetxController {
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           "email": email,
           "uid": user.uid,
+          "name": name,
         });
       }
+      SetOptions(merge: true);
 
       Get.snackbar("Success", "Account Created");
       Get.offAllNamed(AppRoutes.Home);
@@ -83,9 +85,5 @@ class EmailAuthController extends GetxController {
     } catch (e) {
       Get.snackbar("Error", e.toString());
     }
-  }
-
-  Future<void> logout() async {
-    await _auth.signOut();
   }
 }
