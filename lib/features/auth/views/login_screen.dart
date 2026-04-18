@@ -1,15 +1,17 @@
-import 'package:firebase_chat_app/app/controllers/email_auth_controller.dart';
-import 'package:firebase_chat_app/app/controllers/google_auth_controller.dart';
-import 'package:firebase_chat_app/app/routes/app_routes.dart';
-import 'package:firebase_chat_app/app/view/auth_screens/forgot_screen.dart';
+import 'package:firebase_chat_app/features/auth/controllers/email_auth_controller.dart';
+import 'package:firebase_chat_app/features/auth/controllers/google_auth_controller.dart';
+import 'package:firebase_chat_app/routes/app_routes.dart';
+import 'package:firebase_chat_app/features/auth/views/forgot_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-class LoginView extends StatelessWidget {
-  final controller = Get.put(GoogleAuthController());
+class LoginScreen extends StatelessWidget {
+  final googleAuthController = Get.put(GoogleAuthController());
   final logincontroller = Get.put(EmailAuthController());
   final bool passwordVisible = false;
+
+  LoginScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,9 +38,7 @@ class LoginView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      print('Facebook login');
-                    },
+                    onTap: () {},
                     child: Image.asset(
                       'assets/logo/Facebook.png',
                       height: 50.h,
@@ -48,8 +48,7 @@ class LoginView extends StatelessWidget {
                   // SizedBox(width: 20.w),
                   GestureDetector(
                     onTap: () {
-                      controller.signInWithGoogle();
-                      print('Google login');
+                      googleAuthController.signInWithGoogle();
                       // controller.signInWithGoogle();
                     },
                     child: Image.asset(
@@ -141,7 +140,6 @@ class LoginView extends StatelessWidget {
                       logincontroller.passwordController.text.trim(),
                       logincontroller.nameController.text.trim(),
                     );
-                    print('login button clicked');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
@@ -159,7 +157,6 @@ class LoginView extends StatelessWidget {
               SizedBox(height: 20.h),
               TextButton(
                 onPressed: () {
-                  print('Forgot password clicked');
                   Get.to(() => ForgotScreen());
                 },
                 child: Text(
@@ -180,7 +177,6 @@ class LoginView extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      print('Create account clicked');
                       Get.offAllNamed(AppRoutes.SignUp);
                     },
                     child: Text(

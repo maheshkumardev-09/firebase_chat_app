@@ -1,10 +1,11 @@
-import 'package:firebase_chat_app/app/controllers/email_auth_controller.dart';
+import 'package:firebase_chat_app/features/auth/controllers/email_auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class ForgotScreen extends StatelessWidget {
   final controller = Get.put(EmailAuthController());
+
+  ForgotScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
