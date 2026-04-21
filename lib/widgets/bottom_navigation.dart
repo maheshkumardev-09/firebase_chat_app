@@ -1,7 +1,7 @@
+import 'package:firebase_chat_app/features/auth/controllers/call/views/calls_screen.dart';
 import 'package:firebase_chat_app/widgets/bottom_navigation_controller.dart';
-import 'package:firebase_chat_app/features/people/call/views/calls_screen.dart';
-import 'package:firebase_chat_app/features/chat/views/user_screen.dart';
-import 'package:firebase_chat_app/features/people/views/people_screen.dart';
+import 'package:firebase_chat_app/features/chat/views/chat_screen.dart';
+import 'package:firebase_chat_app/features/people/views/people_main_screen.dart';
 import 'package:firebase_chat_app/features/profile/views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,8 +10,8 @@ class BottomNavigation extends StatelessWidget {
   BottomNavigation({super.key});
   final bottomController = Get.put(BottomNavigationController());
   final List<Widget> pages = [
-    UserScreen(),
-    PeopleScreen(),
+    ChatScreen(),
+    PeopleMainScreen(),
     CallsScreen(),
     ProfileScreen(),
   ];

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/user_controller.dart';
 
-class UserScreen extends StatelessWidget {
-  UserScreen({super.key});
+class ChatScreen extends StatelessWidget {
+  ChatScreen({super.key});
 
   final controller = Get.put(UserController());
   final currentUser = FirebaseAuth.instance.currentUser;
