@@ -1,37 +1,22 @@
 class PeopleModel {
   final String id;
   final String name;
-  final String image;
+  final String? image;
+  // final String? bio;
 
-  PeopleModel({required this.id, required this.name, required this.image});
+  PeopleModel({
+    required this.id,
+    required this.name,
+    this.image,
+    // this.bio,
+  });
 
-  factory PeopleModel.fromMap(Map<String, dynamic> data, String id) {
+  factory PeopleModel.fromMap(Map<String, dynamic> map, String id) {
     return PeopleModel(
       id: id,
-      name: data['name'] ?? '',
-      image: data['image'] ?? '',
+      name: map['name'] ?? '',
+      image: map['image'],
+      // bio: map['bio'],
     );
   }
 }
-// class PeopleModel {
-//   final String id;
-//   final String senderId;
-//   final String receiverId;
-//   final String status;
-
-//   PeopleModel({
-//     required this.id,
-//     required this.senderId,
-//     required this.receiverId,
-//     required this.status,
-//   });
-
-//   factory PeopleModel.fromDoc(doc) {
-//     return PeopleModel(
-//       id: doc.id,
-//       senderId: doc['senderId'],
-//       receiverId: doc['receiverId'],
-//       status: doc['status'],
-//     );
-//   }
-// }

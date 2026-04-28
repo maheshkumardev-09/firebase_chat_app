@@ -1,5 +1,7 @@
+import 'package:firebase_chat_app/features/people/controllers/people_controller.dart';
 import 'package:firebase_chat_app/features/people/views/user_requests_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'all_users_screen.dart';
 
 class PeopleMainScreen extends StatelessWidget {
@@ -7,6 +9,7 @@ class PeopleMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(PeopleController());
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -19,7 +22,7 @@ class PeopleMainScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(children: [AllUsersScreen(), UserRequestsScreen()]),
+        body: TabBarView(children: [AllUsersScreen(), PeopleRequestsScreen()]),
       ),
     );
   }

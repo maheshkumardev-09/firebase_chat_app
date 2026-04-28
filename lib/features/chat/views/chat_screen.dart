@@ -15,44 +15,40 @@ class ChatScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Chats")),
       body: Obx(() {
-        if (controller.usersList.isEmpty) {
-          return Center(child: Text("No Users Found"));
-        }
-
+        final filteredUsers = controller.usersList
+            .where((user) => user.uid != currentUser?.uid)
+            .toList();
         return ListView.builder(
-          itemCount: controller.usersList.length,
+          itemCount: filteredUsers.length,
           itemBuilder: (context, index) {
-            final user = controller.usersList[index];
-
-            // Apna user hide karo
-            if (user.uid == currentUser?.uid) {
-              return SizedBox();
-            }
-
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundImage: user.image.isNotEmpty
-                    ? NetworkImage(user.image)
-                    : null,
-                child: user.image.isEmpty ? Icon(Icons.person) : null,
+            final user = filteredUsers[index];
+            return Card(
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: user.image.isNotEmpty
+                      ? NetworkImage(user.image)
+                      : null,
+                  child: controller.usersList.isEmpty
+                      ? Icon(Icons.person)
+                      : null,
+                ),
+                title: Text(
+                  controller.usersList.isNotEmpty
+                      ? controller.usersList[index].name
+                      : "",
+                ),
+                subtitle: Text("Last message..."),
+                trailing: Text("12:00 PM"),
+                onTap: () {
+                  Get.to(
+                    MessageScreen(
+                      receiverId: filteredUsers[index].uid,
+                      receiverName: filteredUsers[index].name,
+                      receiverImage: filteredUsers[index].image,
+                    ),
+                  );
+                },
               ),
-              title: Text(user.name),
-              subtitle: Text("Last message..."), // baad me dynamic karenge
-              trailing: Text("12:30 PM"),
-              onTap: () {
-                Get.to(
-                  MessageScreen(
-                    receiverId: user.uid,
-                    receiverName: user.name,
-                    receiverImage: user.image,
-                    // arguments: {
-                    //   "name": user.name,
-                    //   "uid": user.uid,
-                    //   "image": user.image,
-                    // },
-                  ),
-                );
-              },
             );
           },
         );
