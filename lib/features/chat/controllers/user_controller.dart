@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_chat_app/core/user_model.dart';
 import 'package:get/get.dart';
-import '../models/user_model.dart';
 
 class UserController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,22 +21,17 @@ class UserController extends GetxController {
         .where('status', isEqualTo: 'accepted')
         .snapshots()
         .listen((snapshot) async {
-          List<String> friendIds = [];
-
+          Set<String> friendIds = {};
           for (var doc in snapshot.docs) {
             var data = doc.data();
 
-            // 🔹 agar current user sender hai
             if (data['senderId'] == currentUser) {
               friendIds.add(data['receiverId']);
-            }
-            // 🔹 agar current user receiver hai
-            else if (data['receiverId'] == currentUser) {
+            } else if (data['receiverId'] == currentUser) {
               friendIds.add(data['senderId']);
             }
           }
 
-          // 🔥 ab users collection se detail lao
           List<UserModel> tempUsers = [];
 
           for (String id in friendIds) {
@@ -47,27 +42,14 @@ class UserController extends GetxController {
             }
           }
           usersList.value = tempUsers;
+          final userSnapshot = await _firestore
+              .collection('users')
+              .where(FieldPath.documentId, whereIn: friendIds.toList())
+              .get();
+
+          usersList.value = userSnapshot.docs
+              .map((e) => UserModel.fromMap(e.data()))
+              .toList();
         });
   }
 }
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_chat_app/features/chat/models/user_model.dart';
-// import 'package:get/get.dart';
-
-// class UserController extends GetxController {
-//   var usersList = <UserModel>[].obs;
-
-//   @override
-//   void onInit() {
-//     fetchUsers();
-//     super.onInit();
-//   }
-
-//   void fetchUsers() {
-//     FirebaseFirestore.instance.collection("users").snapshots().listen((event) {
-//       usersList.value = event.docs
-//           .map((doc) => UserModel.fromMap(doc.data()))
-//           .toList();
-//     });
-//   }
-// }

@@ -8,7 +8,7 @@ class MessageScreen extends StatelessWidget {
   final String receiverName;
   final String receiverImage;
 
-  MessageScreen({
+  const MessageScreen({
     super.key,
     required this.receiverId,
     required this.receiverName,
@@ -17,16 +17,18 @@ class MessageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   controller.initChat(receiverId);
-    // });
-    final controller = Get.put(MessageController(receiverId));
+    final controller = Get.put(MessageController(receiverId), tag: receiverId);
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            CircleAvatar(backgroundImage: NetworkImage(receiverImage)),
+            CircleAvatar(
+              backgroundImage: receiverImage.isNotEmpty
+                  ? NetworkImage(receiverImage)
+                  : null,
+              child: receiverImage.isEmpty ? Icon(Icons.person) : null,
+            ),
             SizedBox(width: 10),
             Text(receiverName),
           ],
@@ -34,10 +36,12 @@ class MessageScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          // 🔥 Messages
           Expanded(
             child: Obx(() {
               return ListView.builder(
                 reverse: true,
+                controller: controller.scrollController,
                 itemCount: controller.messages.length,
                 itemBuilder: (context, index) {
                   final msg = controller.messages[index];
@@ -49,8 +53,6 @@ class MessageScreen extends StatelessWidget {
                     child: GestureDetector(
                       onLongPress: () {
                         final chatId = controller.getChatId(receiverId);
-                        final isMe =
-                            msg.senderId == controller.currentUser!.uid;
 
                         Get.bottomSheet(
                           Container(
@@ -87,6 +89,7 @@ class MessageScreen extends StatelessWidget {
                         );
                       },
 
+                      // 🔥 Message bubble
                       child: Container(
                         margin: EdgeInsets.symmetric(
                           vertical: 5.h,
@@ -102,14 +105,39 @@ class MessageScreen extends StatelessWidget {
                               ? CrossAxisAlignment.end
                               : CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              msg.message,
-                              style: TextStyle(
-                                color: isMe ? Colors.white : Colors.black,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    msg.message,
+                                    style: TextStyle(
+                                      color: isMe ? Colors.white : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 5),
+
+                                // ✅ ticks
+                                if (isMe)
+                                  Icon(
+                                    msg.isSeen
+                                        ? Icons.done_all
+                                        : msg.isDelivered
+                                        ? Icons.done_all
+                                        : Icons.check,
+                                    size: 16,
+                                    color: msg.isSeen
+                                        ? Colors.blue
+                                        : msg.isDelivered
+                                        ? Colors.grey
+                                        : Colors.white70,
+                                  ),
+                              ],
                             ),
                             SizedBox(height: 5.h),
-                            // Time
+
+                            // ⏰ time
                             Text(
                               "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
                               style: TextStyle(
@@ -126,7 +154,8 @@ class MessageScreen extends StatelessWidget {
               );
             }),
           ),
-          // 🔥 Input Field
+
+          // 🔥 Input
           Padding(
             padding: EdgeInsets.all(8.0.w),
             child: Row(
@@ -134,11 +163,15 @@ class MessageScreen extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: controller.textController,
+                    onChanged: (value) {
+                      controller.messageText.value = value;
+                    },
                     decoration: InputDecoration(
                       hintText: "Type message...",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
+                      prefixIcon: Icon(Icons.emoji_emotions_outlined),
                       suffixIcon: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -148,23 +181,27 @@ class MessageScreen extends StatelessWidget {
                           SizedBox(width: 8.0.w),
                         ],
                       ),
-                      prefixIcon: Icon(Icons.emoji_emotions_outlined),
                     ),
                   ),
                 ),
                 SizedBox(width: 8.0.w),
-                FloatingActionButton(
-                  backgroundColor: Colors.blue,
-                  onPressed: controller.textController.text.trim().isEmpty
-                      ? null
-                      : () {
-                          controller.sendMessage(
-                            receiverId,
-                            controller.textController.text,
-                          );
-                          controller.textController.clear();
-                        },
-                  child: Icon(Icons.send, color: Colors.white),
+
+                // ✅ Reactive send button
+                Obx(
+                  () => FloatingActionButton(
+                    backgroundColor: Colors.blue,
+                    onPressed: controller.messageText.value.trim().isEmpty
+                        ? null
+                        : () {
+                            controller.sendMessage(
+                              receiverId,
+                              controller.messageText.value,
+                            );
+                            controller.textController.clear();
+                            controller.messageText.value = "";
+                          },
+                    child: Icon(Icons.send, color: Colors.white),
+                  ),
                 ),
               ],
             ),

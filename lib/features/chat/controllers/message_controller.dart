@@ -15,11 +15,13 @@ class MessageController extends GetxController {
   MessageController(this.receiverId);
   late final String chatId;
   final String receiverId;
+  var messageText = "".obs;
   @override
   void onClose() {
     _messageSub?.cancel();
     scrollController.dispose();
     textController.dispose();
+
     super.onClose();
   }
 
@@ -28,6 +30,8 @@ class MessageController extends GetxController {
     super.onInit();
     chatId = getChatId(receiverId);
     getMessages();
+    markAsDelivered();
+    markAsSeen();
     ever(messages, (_) {
       Future.delayed(Duration(milliseconds: 100), () {
         if (scrollController.hasClients) {
@@ -69,6 +73,8 @@ class MessageController extends GetxController {
           "message": text,
           "timestamp": FieldValue.serverTimestamp(),
           "deletedFor": [],
+          "isDelivered": false,
+          "isSeen": false,
         });
   }
 
@@ -109,5 +115,38 @@ class MessageController extends GetxController {
         .update({
           "deletedFor": FieldValue.arrayUnion([currentUser!.uid]),
         });
+  }
+
+  Future<void> markAsDelivered() async {
+    final uid = currentUser?.uid;
+    if (uid == null) return;
+
+    final snapshot = await _firestore
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .where("receiverId", isEqualTo: uid)
+        .where("isDelivered", isEqualTo: false)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      doc.reference.update({"isDelivered": true});
+    }
+  }
+
+  Future<void> markAsSeen() async {
+    final uid = currentUser?.uid;
+    if (uid == null) return;
+
+    final snapshot = await _firestore
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .where("receiverId", isEqualTo: uid)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      doc.reference.update({"isSeen": true});
+    }
   }
 }

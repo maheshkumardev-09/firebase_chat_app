@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_app/features/people/models/friend_request_model.dart';
@@ -6,14 +7,25 @@ import 'package:get/get.dart';
 
 class PeopleController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final currentUser = FirebaseAuth.instance.currentUser!.uid;
+  final String currentUser = FirebaseAuth.instance.currentUser!.uid;
 
+  // 🔥 State
   var users = <PeopleModel>[].obs;
   var friendsIds = <String>[].obs;
   var sentRequests = <String>[].obs;
+  var friendRequests = <FriendRequestModel>[].obs;
+
   var searchText = "".obs;
   var isSearchOpen = false.obs;
-  var friendRequests = <FriendRequestModel>[].obs;
+
+  // 🔥 Subscriptions (memory safe)
+  StreamSubscription? _usersSub;
+  StreamSubscription? _friendsSub;
+  StreamSubscription? _sentSub;
+  StreamSubscription? _requestsSub;
+
+  // 🔥 Fast lookup map
+  Map<String, PeopleModel> usersMap = {};
 
   @override
   void onInit() {
@@ -24,23 +36,41 @@ class PeopleController extends GetxController {
     super.onInit();
   }
 
+  @override
+  void onClose() {
+    _usersSub?.cancel();
+    _friendsSub?.cancel();
+    _sentSub?.cancel();
+    _requestsSub?.cancel();
+    super.onClose();
+  }
+
+  // ================= USERS =================
+
   void fetchUsers() {
-    _firestore.collection('users').snapshots().listen((snapshot) {
-      users.value = snapshot.docs.map((doc) {
-        return PeopleModel.fromMap(doc.data(), doc.id);
-      }).toList();
+    _usersSub = _firestore.collection('users').snapshots().listen((snapshot) {
+      final list = snapshot.docs
+          .map((doc) => PeopleModel.fromMap(doc.data(), doc.id))
+          .toList();
+
+      users.value = list;
+
+      // 🔥 create map for fast lookup
+      usersMap = {for (var u in list) u.id: u};
     });
   }
 
+  // ================= FILTER =================
+
   List<PeopleModel> get filteredUsers {
-    var filtered = users
-        .where(
-          (user) =>
-              user.id != currentUser &&
-              !friendsIds.contains(user.id) &&
-              !sentRequests.contains(user.id),
-        )
-        .toList();
+    final friendsSet = friendsIds.toSet();
+    final sentSet = sentRequests.toSet();
+
+    var filtered = users.where((user) {
+      return user.id != currentUser &&
+          !friendsSet.contains(user.id) &&
+          !sentSet.contains(user.id);
+    }).toList();
 
     if (searchText.value.isEmpty) return filtered;
 
@@ -51,13 +81,40 @@ class PeopleController extends GetxController {
 
   void toggleSearch() {
     isSearchOpen.value = !isSearchOpen.value;
-    if (!isSearchOpen.value) {
-      searchText.value = "";
-    }
+    if (!isSearchOpen.value) searchText.value = "";
   }
+
+  // ================= FRIEND REQUEST =================
 
   Future<void> sendFriendRequest(String receiverId) async {
     try {
+      // 🔴 Check duplicate request
+      final existing = await _firestore
+          .collection('friend_requests')
+          .where("senderId", isEqualTo: currentUser)
+          .where("receiverId", isEqualTo: receiverId)
+          .get();
+
+      if (existing.docs.isNotEmpty) {
+        Get.snackbar("Info", "Request already sent");
+        return;
+      }
+
+      final reverse = await _firestore
+          .collection('friend_requests')
+          .where("senderId", isEqualTo: receiverId)
+          .where("receiverId", isEqualTo: currentUser)
+          .get();
+
+      if (reverse.docs.isNotEmpty) {
+        await reverse.docs.first.reference.update({"status": "accepted"});
+
+        await addToContacts(receiverId);
+
+        Get.snackbar("Success", "Friend Added");
+        return;
+      }
+
       await _firestore.collection('friend_requests').add({
         "senderId": currentUser,
         "receiverId": receiverId,
@@ -71,8 +128,40 @@ class PeopleController extends GetxController {
     }
   }
 
+  Future<void> acceptRequest(FriendRequestModel request) async {
+    await _firestore.collection("friend_requests").doc(request.id).update({
+      "status": "accepted",
+    });
+
+    await addToContacts(request.senderId);
+
+    Get.snackbar("Success", "Request Accepted");
+  }
+
+  Future<void> deleteRequest(String requestId) async {
+    await _firestore.collection("friend_requests").doc(requestId).delete();
+
+    Get.snackbar("Removed", "Request Deleted");
+  }
+
+  Future<void> addToContacts(String otherUserId) async {
+    await _firestore
+        .collection("contacts")
+        .doc(currentUser)
+        .collection("friends")
+        .doc(otherUserId)
+        .set({"uid": otherUserId});
+
+    await _firestore
+        .collection("contacts")
+        .doc(otherUserId)
+        .collection("friends")
+        .doc(currentUser)
+        .set({"uid": currentUser});
+  }
+
   void fetchFriends() {
-    _firestore
+    _friendsSub = _firestore
         .collection("contacts")
         .doc(currentUser)
         .collection("friends")
@@ -83,7 +172,7 @@ class PeopleController extends GetxController {
   }
 
   void fetchSentRequests() {
-    _firestore
+    _sentSub = _firestore
         .collection("friend_requests")
         .where("senderId", isEqualTo: currentUser)
         .snapshots()
@@ -95,7 +184,7 @@ class PeopleController extends GetxController {
   }
 
   void fetchFriendRequests() {
-    _firestore
+    _requestsSub = _firestore
         .collection("friend_requests")
         .where("receiverId", isEqualTo: currentUser)
         .where("status", isEqualTo: "pending")
@@ -108,9 +197,6 @@ class PeopleController extends GetxController {
   }
 
   PeopleModel getUserById(String id) {
-    return users.firstWhere(
-      (u) => u.id == id,
-      orElse: () => PeopleModel(id: '', name: 'Unknown', image: ''),
-    );
+    return usersMap[id] ?? PeopleModel(id: '', name: 'Unknown', image: '');
   }
 }

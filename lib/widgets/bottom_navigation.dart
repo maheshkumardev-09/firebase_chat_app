@@ -1,8 +1,8 @@
-import 'package:firebase_chat_app/features/auth/controllers/call/views/calls_screen.dart';
 import 'package:firebase_chat_app/widgets/bottom_navigation_controller.dart';
 import 'package:firebase_chat_app/features/chat/views/chat_screen.dart';
 import 'package:firebase_chat_app/features/people/views/people_main_screen.dart';
 import 'package:firebase_chat_app/features/profile/views/profile_screen.dart';
+import 'package:firebase_chat_app/features/calls/views/calls_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

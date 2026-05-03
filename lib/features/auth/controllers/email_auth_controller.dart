@@ -45,8 +45,6 @@ class EmailAuthController extends GetxController {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final user = userCredential.user;
-
-      // 🔹 Firestore me user save
       if (user != null) {
         await FirebaseFirestore.instance.collection("users").doc(user.uid).set({
           "email": email,

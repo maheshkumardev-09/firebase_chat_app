@@ -7,6 +7,8 @@ class MessageModel {
   final String message;
   final DateTime timestamp;
   final List<String> deletedFor;
+  final bool isDelivered;
+  final bool isSeen;
 
   MessageModel({
     required this.id,
@@ -15,6 +17,8 @@ class MessageModel {
     required this.message,
     required this.timestamp,
     required this.deletedFor,
+    required this.isDelivered,
+    required this.isSeen,
   });
 
   factory MessageModel.fromMap(Map<String, dynamic> data, String id) {
@@ -27,6 +31,8 @@ class MessageModel {
           ? (data['timestamp'] as Timestamp).toDate()
           : DateTime.now(),
       deletedFor: List<String>.from(data['deletedFor'] ?? []),
+      isDelivered: data['isDelivered'] ?? false,
+      isSeen: data['isSeen'] ?? false,
     );
   }
 }
