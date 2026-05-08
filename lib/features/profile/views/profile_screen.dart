@@ -1,4 +1,5 @@
 import 'package:firebase_chat_app/features/profile/controllers/profile_controller.dart';
+import 'package:firebase_chat_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -31,7 +32,6 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-
               children: [
                 CircleAvatar(
                   radius: 45.r,
@@ -40,6 +40,7 @@ class ProfileScreen extends StatelessWidget {
                       : null,
                   child: user.image.isEmpty ? Icon(Icons.person) : null,
                 ),
+
                 SizedBox(height: 20.h),
                 Text(
                   user.name,
@@ -54,8 +55,19 @@ class ProfileScreen extends StatelessWidget {
                   child: ListTile(
                     leading: Icon(Icons.edit),
                     title: Text("Edit Profile"),
-                    onTap: () {},
+                    onTap: () {
+                      Get.toNamed(AppRoutes.EditProfile);
+                    },
                     trailing: Icon(Icons.arrow_forward_ios),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Card(
+                  child: ListTile(
+                    leading: Icon(Icons.lock),
+                    title: Text('Change Password'),
+                    trailing: Icon(Icons.arrow_forward_ios),
+                    onTap: () {},
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -75,6 +87,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 SizedBox(height: 30.h),
                 SizedBox(
                   height: 40.h,
