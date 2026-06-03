@@ -1,119 +1,101 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_app/features/profile/controllers/profile_controller.dart';
-import 'package:firebase_chat_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
-  final controller = Get.put(ProfileController());
+
+  final profileController = Get.put(ProfileController());
 
   @override
+  // void dispose() {
+  //   _newPasswordController.dispose();
+  //   super.dispose();
+  // }
+  @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser!;
+    final providers = user.providerData.map((e) => e.providerId).toList();
+    final isGoogleUser = providers.contains('google.com');
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: TextStyle(fontSize: 30.sp, fontWeight: FontWeight.bold),
-        ),
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Container(height: 1.h, color: Colors.black),
+      appBar: AppBar(title: Text("Profile")),
+      body: Padding(
+        padding: EdgeInsets.all(20.w),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // User Photo
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: user.photoURL != null
+                    ? NetworkImage(user.photoURL!)
+                    : null,
+                child: user.photoURL == null
+                    ? Icon(Icons.person, size: 40)
+                    : null,
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                user.displayName ?? "No Name",
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+              ),
+              Text(user.email ?? "", style: TextStyle(color: Colors.grey)),
+              SizedBox(height: 8.h),
+              Chip(
+                label: Text(isGoogleUser ? "Google Account" : "Email Account"),
+                backgroundColor: isGoogleUser
+                    ? Colors.red[100]
+                    : Colors.blue[100],
+              ),
+              SizedBox(height: 30),
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.edit),
+                  title: Text("Edit Profile"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: profileController.goToEditProfile,
+                ),
+              ),
+              SizedBox(height: 8.0.h),
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.lock),
+                  title: Text("change password"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                  onTap: profileController.goToChangePassword,
+                ),
+              ),
+              SizedBox(height: 8.0.h),
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.dark_mode),
+                  title: Text("Dark Mode"),
+                  trailing: Obx(
+                    () => Switch(
+                      value: profileController.isDarkmode.value,
+                      onChanged: (v) => profileController.toggleTheme(),
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 8.0.h),
+
+              // Logout
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.logout),
+                  title: Text("Logout"),
+                  onTap: () => profileController.logout(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      body: Obx(() {
-        final user = controller.user.value;
-        if (user == null) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return Padding(
-          padding: EdgeInsets.all(16.w),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 45.r,
-                  backgroundImage: user.image.isNotEmpty
-                      ? NetworkImage(user.image)
-                      : null,
-                  child: user.image.isEmpty ? Icon(Icons.person) : null,
-                ),
-
-                SizedBox(height: 20.h),
-                Text(
-                  user.name,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(user.email, style: TextStyle(fontSize: 16.sp)),
-                SizedBox(height: 30.h),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text("Edit Profile"),
-                    onTap: () {
-                      Get.toNamed(AppRoutes.EditProfile);
-                    },
-                    trailing: Icon(Icons.arrow_forward_ios),
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.lock),
-                    title: Text('Change Password'),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {},
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.dark_mode),
-                    title: Text("Dark Mode"),
-                    trailing: Obx(
-                      () => Switch(
-                        value: controller.isDarkmode.value,
-                        onChanged: (value) {
-                          controller.toggleTheme();
-                        },
-                        activeColor: Colors.orange,
-                        inactiveThumbColor: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 30.h),
-                SizedBox(
-                  height: 40.h,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      controller.logout();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                    ),
-                    child: Text(
-                      'Log Out',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
     );
   }
 }

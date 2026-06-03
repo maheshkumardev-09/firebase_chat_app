@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_chat_app/features/chat/controllers/user_controller.dart';
 import 'package:firebase_chat_app/features/chat/models/message_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -76,6 +77,15 @@ class MessageController extends GetxController {
           "isDelivered": false,
           "isSeen": false,
         });
+    final now = DateTime.now();
+    final timeStr = "${now.hour}:${now.minute.toString().padLeft(2, '0')}";
+    await _firestore.collection("chats").doc(chatId).set({
+      "lastMessage": text,
+      "lastMessageTime": timeStr,
+    }, SetOptions(merge: true));
+    if (Get.isRegistered<UserController>()) {
+      Get.find<UserController>().fetchAcceptedUsers();
+    }
   }
 
   void getMessages() {

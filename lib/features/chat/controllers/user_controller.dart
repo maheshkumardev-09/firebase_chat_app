@@ -8,7 +8,7 @@ class UserController extends GetxController {
   final currentUser = FirebaseAuth.instance.currentUser!.uid;
 
   var usersList = <UserModel>[].obs;
-
+  var isLoading = true.obs;
   @override
   void onInit() {
     fetchAcceptedUsers();
@@ -24,32 +24,60 @@ class UserController extends GetxController {
           Set<String> friendIds = {};
           for (var doc in snapshot.docs) {
             var data = doc.data();
-
             if (data['senderId'] == currentUser) {
               friendIds.add(data['receiverId']);
             } else if (data['receiverId'] == currentUser) {
               friendIds.add(data['senderId']);
             }
           }
+          print("My UID: $currentUser");
+          print("Friend IDs: $friendIds");
 
-          List<UserModel> tempUsers = [];
-
-          for (String id in friendIds) {
-            var userDoc = await _firestore.collection('users').doc(id).get();
-
-            if (userDoc.exists) {
-              tempUsers.add(UserModel.fromMap(userDoc.data()!));
-            }
+          if (friendIds.isEmpty) {
+            usersList.value = [];
+            isLoading.value = false;
+            return;
           }
-          usersList.value = tempUsers;
-          final userSnapshot = await _firestore
+          List<UserModel> usersWithMessages = [];
+          isLoading.value = true;
+          final userDocs = await _firestore
               .collection('users')
               .where(FieldPath.documentId, whereIn: friendIds.toList())
               .get();
+          print("Users fetched: ${userDocs.docs.length}");
+          for (var doc in userDocs.docs) {
+            print("User data: ${doc.data()}");
+            // final usedata = UserModel.fromMap(doc.data());
+            final data = doc.data();
+            data['uid'] = doc.id;
+            final usedata = UserModel.fromMap(data);
+            final outherUid = usedata.uid;
+            final chatId = currentUser.compareTo(outherUid) < 0
+                ? "${currentUser}_$outherUid"
+                : "${outherUid}_$currentUser";
+            final chatDoc = await _firestore
+                .collection('chats')
+                .doc(chatId)
+                .get();
+            final lastMessage = chatDoc.data()?['lastMessage'] ?? '';
+            // final lastMessageTime =
+            //     (chatDoc.data()?['lastMessageTime'] as Timestamp?)?.toDate() ??
+            //     DateTime.now();
+            final lastMessageTime = chatDoc.data()?['lastTime'] ?? '';
 
-          usersList.value = userSnapshot.docs
-              .map((e) => UserModel.fromMap(e.data()))
-              .toList();
+            usersWithMessages.add(
+              UserModel(
+                uid: usedata.uid,
+                name: usedata.name,
+                email: usedata.email,
+                image: usedata.image,
+                lastMessage: lastMessage,
+                lastMessageTime: lastMessageTime,
+              ),
+            );
+          }
+          usersList.value = usersWithMessages;
+          isLoading.value = false;
         });
   }
 }

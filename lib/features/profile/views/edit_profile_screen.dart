@@ -10,7 +10,7 @@ class EditProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = controller.firebaseUser; // ✅ controller se lo
+    final user = controller.firebaseUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -41,9 +41,7 @@ class EditProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             SizedBox(height: 20),
-
             TextField(
               controller: controller.nameController,
               decoration: InputDecoration(
@@ -54,9 +52,9 @@ class EditProfileScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            TextFormField(
-              enabled: false,
-              initialValue: user?.email ?? '',
+            TextField(
+              controller: controller.emailController,
+              // initialValue: user?.email ?? '',
               decoration: InputDecoration(
                 labelText: "Edit Email",
                 border: OutlineInputBorder(
@@ -69,14 +67,16 @@ class EditProfileScreen extends StatelessWidget {
               width: double.infinity,
               height: 40.h,
               child: Obx(
-                () => controller.isLoading.value
-                    ? CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: controller.updateProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                        ),
-                        child: Text(
+                () => ElevatedButton(
+                  onPressed: controller.updateProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                  ),
+                  child: controller.isLoading.value
+                      ? Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        )
+                      : Text(
                           "Save",
                           style: TextStyle(
                             fontSize: 16.sp,
@@ -84,7 +84,7 @@ class EditProfileScreen extends StatelessWidget {
                             color: Colors.white,
                           ),
                         ),
-                      ),
+                ),
               ),
             ),
           ],

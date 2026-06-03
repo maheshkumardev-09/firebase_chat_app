@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 class SignUpScreen extends StatelessWidget {
   final signinController = Get.put(EmailAuthController());
+  final bool passwordVisible = false;
 
   SignUpScreen({super.key});
 
@@ -75,22 +76,24 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8.0.h),
-              TextField(
-                keyboardType: TextInputType.visiblePassword,
-                controller: signinController.passwordController,
-                obscureText: signinController.isPasswordHidden.value,
-                decoration: InputDecoration(
-                  hintText: "Enter your password",
-                  border: OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      signinController.isPasswordHidden.value
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+              Obx(
+                () => TextField(
+                  keyboardType: TextInputType.visiblePassword,
+                  controller: signinController.passwordController,
+                  obscureText: signinController.isPasswordHidden.value,
+                  decoration: InputDecoration(
+                    hintText: "Enter your password",
+                    border: OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        signinController.isPasswordHidden.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        signinController.isPasswordHidden.toggle();
+                      },
                     ),
-                    onPressed: () {
-                      signinController.isPasswordHidden.toggle();
-                    },
                   ),
                 ),
               ),

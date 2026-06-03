@@ -21,6 +21,7 @@ class MessageScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade200,
         title: Row(
           children: [
             CircleAvatar(
@@ -30,9 +31,25 @@ class MessageScreen extends StatelessWidget {
               child: receiverImage.isEmpty ? Icon(Icons.person) : null,
             ),
             SizedBox(width: 10),
-            Text(receiverName),
+            Flexible(
+              child: Text(
+                receiverName,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
+        actions: [
+          Icon(Icons.video_camera_front_outlined),
+          SizedBox(width: 10.w),
+          Icon(Icons.call_outlined),
+          SizedBox(width: 30.w),
+        ],
       ),
       body: Column(
         children: [
@@ -136,8 +153,6 @@ class MessageScreen extends StatelessWidget {
                               ],
                             ),
                             SizedBox(height: 5.h),
-
-                            // ⏰ time
                             Text(
                               "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
                               style: TextStyle(

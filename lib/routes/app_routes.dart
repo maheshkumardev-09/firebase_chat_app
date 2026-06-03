@@ -5,4 +5,5 @@ abstract class AppRoutes {
   static const SignUp = '/signup';
   static const Forgot = '/forgot';
   static const EditProfile = '/editprofile';
+  static const ChangePassword = '/change-password';
 }

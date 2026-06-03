@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 
 class EditProfileController extends GetxController {
   final nameController = TextEditingController();
-  // final emailController = TextEditingController();
+  final emailController = TextEditingController();
   var selectedImage = Rxn<File>();
   var isLoading = false.obs;
   User? get firebaseUser => FirebaseAuth.instance.currentUser;
@@ -19,14 +19,17 @@ class EditProfileController extends GetxController {
   void onInit() {
     super.onInit();
     final user = FirebaseAuth.instance.currentUser;
+
     if (user != null) {
       nameController.text = user.displayName ?? '';
+      emailController.text = user.email ?? '';
     }
   }
 
   @override
   void onClose() {
     nameController.dispose();
+    emailController.dispose();
     super.onClose();
   }
 
@@ -72,7 +75,15 @@ class EditProfileController extends GetxController {
         imageUrl = await uploadImage();
       }
       final newName = nameController.text.trim();
+      final newEmail = emailController.text.trim();
       await user.updateDisplayName(newName);
+
+      if (newEmail != user.email) {
+        await user.verifyBeforeUpdateEmail(newEmail);
+        Get.snackbar("Info", "You already use this email");
+        return;
+      }
+
       if (imageUrl != null) {
         await user.updatePhotoURL(imageUrl);
       }
@@ -80,11 +91,10 @@ class EditProfileController extends GetxController {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'uid': user.uid,
         'name': newName,
-        'email': user.email,
+        'email': newEmail,
         'image': imageUrl ?? user.photoURL ?? '',
       }, SetOptions(merge: true));
 
-      /// 🔁 Refresh Profile
       if (Get.isRegistered<ProfileController>()) {
         Get.find<ProfileController>().loadUser();
       }
