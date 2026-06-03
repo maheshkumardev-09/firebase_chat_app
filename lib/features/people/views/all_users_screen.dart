@@ -70,6 +70,8 @@ class AllUsersScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           fontSize: 16.sp,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.clip,
                       ),
                       trailing: Builder(
                         builder: (_) {

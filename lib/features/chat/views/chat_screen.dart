@@ -63,14 +63,9 @@ class ChatScreen extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing:
-                      user.lastMessage.isEmpty || user.lastMessageTime.isEmpty
+                  trailing: user.lastMessageTime.isEmpty
                       ? null
-                      : Text(
-                          intl.DateFormat(
-                            'hh:mm a',
-                          ).format(DateTime.parse(user.lastMessageTime)),
-                        ),
+                      : Text(user.lastMessageTime),
                   onTap: () {
                     Get.to(
                       MessageScreen(

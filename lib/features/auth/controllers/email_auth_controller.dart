@@ -10,7 +10,7 @@ class EmailAuthController extends GetxController {
   final TextEditingController nameController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   var isPasswordHidden = true.obs;
-  Future<void> login(String email, String password, String name) async {
+  Future<void> login(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -40,7 +40,6 @@ class EmailAuthController extends GetxController {
 
   Future<void> signUp(String email, String password, String name) async {
     try {
-      // 🔹 Firebase me account create
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
@@ -51,8 +50,8 @@ class EmailAuthController extends GetxController {
           "uid": user.uid,
           "name": name,
         });
+        SetOptions(merge: true);
       }
-      SetOptions(merge: true);
 
       Get.snackbar("Success", "Account Created");
       Get.offAllNamed(AppRoutes.Home);

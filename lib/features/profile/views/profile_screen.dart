@@ -21,7 +21,12 @@ class ProfileScreen extends StatelessWidget {
     final isGoogleUser = providers.contains('google.com');
 
     return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
+      appBar: AppBar(
+        title: Text(
+          "Profile",
+          style: TextStyle(fontSize: 30.sp, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(20.w),
         child: SingleChildScrollView(

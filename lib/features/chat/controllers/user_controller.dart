@@ -60,10 +60,10 @@ class UserController extends GetxController {
                 .doc(chatId)
                 .get();
             final lastMessage = chatDoc.data()?['lastMessage'] ?? '';
+            final lastMessageTime = chatDoc.data()?['lastMessageTime'] ?? '';
             // final lastMessageTime =
             //     (chatDoc.data()?['lastMessageTime'] as Timestamp?)?.toDate() ??
             //     DateTime.now();
-            final lastMessageTime = chatDoc.data()?['lastTime'] ?? '';
 
             usersWithMessages.add(
               UserModel(
