@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_app/features/chat/views/message_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart' show SizeExtension;
 import 'package:get/get.dart';
 import '../controllers/user_controller.dart';
 
