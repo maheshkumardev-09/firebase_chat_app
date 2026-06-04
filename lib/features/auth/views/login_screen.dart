@@ -138,7 +138,6 @@ class LoginScreen extends StatelessWidget {
                     await logincontroller.login(
                       logincontroller.emailController.text.trim(),
                       logincontroller.passwordController.text.trim(),
-                      logincontroller.nameController.text.trim(),
                     );
                   },
                   style: ElevatedButton.styleFrom(

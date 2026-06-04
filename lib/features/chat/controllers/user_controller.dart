@@ -44,9 +44,7 @@ class UserController extends GetxController {
               .collection('users')
               .where(FieldPath.documentId, whereIn: friendIds.toList())
               .get();
-          print("Users fetched: ${userDocs.docs.length}");
           for (var doc in userDocs.docs) {
-            print("User data: ${doc.data()}");
             // final usedata = UserModel.fromMap(doc.data());
             final data = doc.data();
             data['uid'] = doc.id;
