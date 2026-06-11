@@ -49,7 +49,6 @@ class LoginScreen extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       googleAuthController.signInWithGoogle();
-                      // controller.signInWithGoogle();
                     },
                     child: Image.asset(
                       'assets/logo/Google.png',
@@ -94,6 +93,7 @@ class LoginScreen extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Enter your email',
                   border: OutlineInputBorder(),
+                  errorText: null,
                 ),
               ),
               SizedBox(height: 12.h),
@@ -130,25 +130,30 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 50.h),
-              SizedBox(
-                height: 40.h,
-                width: 300.w,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await logincontroller.login(
-                      logincontroller.emailController.text.trim(),
-                      logincontroller.passwordController.text.trim(),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                  ),
-                  child: Text(
-                    "Log in",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+              Obx(
+                () => SizedBox(
+                  height: 40.h,
+                  width: 300.w,
+                  child: ElevatedButton(
+                    onPressed: logincontroller.isLoading.value
+                        ? null
+                        : () async {
+                            await logincontroller.login(
+                              logincontroller.emailController.text.trim(),
+                              logincontroller.passwordController.text.trim(),
+                            );
+                          },
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: Text(
+                      "Log in",
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

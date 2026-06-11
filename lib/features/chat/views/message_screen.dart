@@ -1,4 +1,6 @@
 import 'package:firebase_chat_app/features/chat/controllers/message_controller.dart';
+import 'package:firebase_chat_app/features/chat/models/message_model.dart';
+import 'package:firebase_chat_app/features/chat/views/widgets/video_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -53,7 +55,22 @@ class MessageScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // 🔥 Messages
+          Obx(() {
+            // if (controller.isUploading.value) return SizedBox.shrink();
+            if (!controller.isUploading.value) return SizedBox.shrink();
+            return Column(
+              children: [
+                LinearProgressIndicator(value: controller.uploadProgress.value),
+                Padding(
+                  padding: EdgeInsets.all(4.w),
+                  child: Text(
+                    "Uploading... ${(controller.uploadProgress.value * 100).toStringAsFixed(0)}%",
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                  ),
+                ),
+              ],
+            );
+          }),
           Expanded(
             child: Obx(() {
               return ListView.builder(
@@ -122,21 +139,22 @@ class MessageScreen extends StatelessWidget {
                               ? CrossAxisAlignment.end
                               : CrossAxisAlignment.start,
                           children: [
+                            _buildMessageContent(msg, isMe),
+                            SizedBox(height: 4.h),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    msg.message,
-                                    style: TextStyle(
-                                      color: isMe ? Colors.white : Colors.black,
-                                    ),
+                                Text(
+                                  "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
+                                  style: TextStyle(
+                                    color: isMe
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    fontSize: 12.sp,
                                   ),
                                 ),
-                                SizedBox(width: 5),
-
-                                // ✅ ticks
-                                if (isMe)
+                                if (isMe) ...[
+                                  SizedBox(width: 4.w),
                                   Icon(
                                     msg.isSeen
                                         ? Icons.done_all
@@ -150,16 +168,17 @@ class MessageScreen extends StatelessWidget {
                                         ? Colors.grey
                                         : Colors.white70,
                                   ),
+                                ],
                               ],
                             ),
-                            SizedBox(height: 5.h),
-                            Text(
-                              "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
-                              style: TextStyle(
-                                color: isMe ? Colors.white70 : Colors.black54,
-                                fontSize: 12.sp,
-                              ),
-                            ),
+                            // SizedBox(height: 5.h),
+                            // Text(
+                            //   "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
+                            //   style: TextStyle(
+                            //     color: isMe ? Colors.white70 : Colors.black54,
+                            //     fontSize: 12.sp,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
@@ -170,7 +189,6 @@ class MessageScreen extends StatelessWidget {
             }),
           ),
 
-          // 🔥 Input
           Padding(
             padding: EdgeInsets.all(8.0.w),
             child: Row(
@@ -190,9 +208,15 @@ class MessageScreen extends StatelessWidget {
                       suffixIcon: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.camera_alt_outlined),
+                          IconButton(
+                            icon: Icon(Icons.camera_alt_outlined),
+                            onPressed: () => controller.pickAndSendImage(),
+                          ),
                           SizedBox(width: 8.0.w),
-                          Icon(Icons.attach_file_outlined),
+                          IconButton(
+                            icon: Icon(Icons.attach_file_outlined),
+                            onPressed: () => controller.pickAndSendVideo(),
+                          ),
                           SizedBox(width: 8.0.w),
                         ],
                       ),
@@ -200,8 +224,6 @@ class MessageScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 8.0.w),
-
-                // ✅ Reactive send button
                 Obx(
                   () => FloatingActionButton(
                     backgroundColor: Colors.blue,
@@ -224,5 +246,47 @@ class MessageScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildMessageContent(msg, bool isMe) {
+    switch (msg.messageType) {
+      case MessageType.image:
+        return GestureDetector(
+          onTap: () {
+            Get.dialog(
+              Dialog(
+                child: InteractiveViewer(
+                  child: Image.network(msg.message, fit: BoxFit.contain),
+                ),
+              ),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8.r),
+            child: Image.network(
+              msg.message,
+              width: 200.w,
+              height: 200.h,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  width: 200.w,
+                  height: 200.h,
+                  color: Colors.black26,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
+          ),
+        );
+      case MessageType.video:
+        return VideoMessageWidget(url: msg.message);
+      default:
+        return Text(
+          msg.message,
+          style: TextStyle(color: isMe ? Colors.white : Colors.black),
+        );
+    }
   }
 }
