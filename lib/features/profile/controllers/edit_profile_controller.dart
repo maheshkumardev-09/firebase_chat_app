@@ -53,11 +53,11 @@ class EditProfileController extends GetxController {
       await ref.putFile(selectedImage.value!);
 
       final url = await ref.getDownloadURL();
-      print("Image URL: $url");
+      // print("Image URL: $url");
 
       return url;
     } catch (e) {
-      print("Upload Error: $e");
+      // print("Upload Error: $e");
       return null;
     }
   }

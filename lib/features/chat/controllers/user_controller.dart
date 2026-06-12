@@ -30,8 +30,8 @@ class UserController extends GetxController {
               friendIds.add(data['senderId']);
             }
           }
-          print("My UID: $currentUser");
-          print("Friend IDs: $friendIds");
+          // print("My UID: $currentUser");
+          // print("Friend IDs: $friendIds");
 
           if (friendIds.isEmpty) {
             usersList.value = [];
